@@ -5,8 +5,8 @@ An offline, no-root APK / ZIP / DEX modding tool for Android.
 no storage permission, no root.
 
 > ⚠️ **Status: v0.1 (initial scaffold).** Written in one go and not yet compiled on
-> a real toolchain. Build it with Android Studio or directly in Termux, expect
-> small API/gradle fixes, and test before any release.
+> a real toolchain. Build it with GitHub Actions, Android Studio or Termux,
+> expect small API/gradle fixes, and test before any release.
 
 ## Features (v0.1)
 
@@ -42,31 +42,29 @@ The launcher icon and the top banner logo are **generated from your own images**
 `scripts/setup_images.sh` produces every icon size, so you never resize anything
 by hand. Until then, a placeholder vector logo keeps the project buildable.
 
-**Recommended:** commit your two originals into the repo once, as:
+The source images live in the repo (committed as-is, no resizing):
 
 | Repo file | Used as |
 |---|---|
 | `branding/icon.jpeg` | launcher icon → `mipmap-*/ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png` (adaptive icon, all densities) |
 | `branding/logo.jpeg` | top banner logo → `drawable-nodpi/ikoko_logo.jpg` |
 
-Ways to get the images into the repo:
+`.jpg` / `.png` extensions work too. Ways to update them:
 
 - **From Termux:** `bash scripts/upload_branding.sh` — copies them from
-  `/storage/emulated/0/Download/download (6).jpeg` / `(5).jpeg` and pushes.
-  Needs a one-time GitHub login (`gh auth login`, short code + browser).
+  `/storage/emulated/0/Download/download (6).jpeg` / `(5).jpeg` and pushes
+  (needs a one-time `gh auth login`).
 - **From the GitHub web UI:** *Add file → Upload files*, drag the images,
   name them `branding/icon.jpeg` and `branding/logo.jpeg`.
 
-`.jpg` / `.png` extensions work too — upload the originals as-is, no resizing.
-Alternatively keep the images only on the device (the build finds them in the
-Download folder automatically), or pass explicit paths:
-`bash scripts/setup_images.sh <icon> <logo>`.
-
-You can also commit ready-made icon resources directly into the
-`mipmap-*/` + `drawable-nodpi/` folders (same file names); the build then skips
-image generation automatically.
-
 ## Build
+
+### In the cloud with GitHub Actions (nothing to install)
+
+Every push to `main` (for example after changing the icon/logo) builds the
+APK automatically: repo → **Actions** → latest **Build APK** run →
+**I-KO-KO-Manager-debug** artifact (a zip containing `app-debug.apk`).
+A build can also be started manually: **Actions → Build APK → Run workflow**.
 
 ### On a PC
 
@@ -80,13 +78,11 @@ image generation automatically.
 ```bash
 git clone https://github.com/gikoko611/IKOKO-Manager.git
 cd IKOKO-Manager
-bash scripts/termux_setup.sh        # one time: JDK 17, SDK 35, aapt2, ImageMagick, gh
-bash scripts/upload_branding.sh     # one time: push your icon + logo into branding/
-bash scripts/termux_build.sh        # branding + build + copy APK to Download
+bash scripts/termux_setup.sh   # one time: JDK 17, SDK 35, aapt2, ImageMagick
+bash scripts/termux_build.sh   # branding + build + copy APK to Download
 ```
 
 The APK lands in `/storage/emulated/0/Download/I-KO-KO-Manager-debug.apk`.
-
 Termux specifics handled by the scripts: the system `aapt2` via
 `android.aapt2FromMavenOverride`, `openjdk-17` as the Gradle JVM, and a
 device-friendly 1.5 GB Gradle heap.
@@ -98,6 +94,7 @@ JDK 17, minSdk 24, targetSdk 35.
 
 ```
 branding/                    your icon + logo source images (committed)
+.github/workflows/build.yml  GitHub Actions: cloud build → APK artifact
 app/src/main/java/com/gikoko/ikokomanager/
 ├── MainActivity.kt
 ├── core/                     (all engine code, plain Kotlin)
