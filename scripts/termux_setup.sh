@@ -9,6 +9,9 @@
 #
 set -e
 
+# Keep Android from killing Termux during the long install.
+command -v termux-wake-lock >/dev/null 2>&1 && termux-wake-lock
+
 echo "== 1/5 Termux packages =="
 pkg update -y
 pkg install -y openjdk-17 aapt2 git gh gradle imagemagick unzip curl
@@ -40,5 +43,4 @@ android.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2
 EOF
 
 echo ""
-echo "Setup done. Upload your images with:  bash scripts/upload_branding.sh"
-echo "Then build with:                      bash scripts/termux_build.sh"
+echo "Setup done. Build anytime with:  bash scripts/termux_build.sh"
