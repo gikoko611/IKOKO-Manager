@@ -1,13 +1,9 @@
 package com.gikoko.ikokomanager.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Build
@@ -25,8 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -46,31 +42,18 @@ fun MainScreen() {
 
     Scaffold(
         topBar = {
+            // GI banner logo at the very top of every screen.
+            // scripts/setup_images.sh generates the real image from your own
+            // logo file; until then the placeholder vector is used.
             Surface(color = MaterialTheme.colorScheme.surface) {
-                Row(
+                Image(
+                    painter = painterResource(R.drawable.ikoko_logo),
+                    contentDescription = "I KO KO Manager",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.ikoko_logo),
-                        contentDescription = "I KO KO Manager",
-                        modifier = Modifier.size(40.dp)
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            "I KO KO Manager",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(
-                            "Offline APK / DEX modding tools",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                        .height(72.dp),
+                    contentScale = ContentScale.Crop
+                )
             }
         },
         bottomBar = {

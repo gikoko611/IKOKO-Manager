@@ -5,8 +5,8 @@ An offline, no-root APK / ZIP / DEX modding tool for Android.
 no storage permission, no root.
 
 > ⚠️ **Status: v0.1 (initial scaffold).** Written in one go and not yet compiled on
-> a real toolchain. Build it with Android Studio, expect small API/gradle fixes,
-> and test before any release.
+> a real toolchain. Build it with Android Studio or directly in Termux, expect
+> small API/gradle fixes, and test before any release.
 
 ## Features (v0.1)
 
@@ -36,12 +36,45 @@ pick APK ─▶ copy into workspace
 A modified APK has a different signature than the original app, so the original
 must be uninstalled first — that is normal Android behavior, not a bug.
 
+## Branding (icon + logo)
+
+The launcher icon and the top banner logo are **generated on your device** from
+your own images — no binary files are stored in this repo. Until you generate
+them, a placeholder vector logo keeps the project buildable.
+
+Source images (on the Termux device):
+
+| File | Used as |
+|---|---|
+| `/storage/emulated/0/Download/download (6).jpeg` | launcher icon → `mipmap-*/ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png` (adaptive icon, all densities) |
+| `/storage/emulated/0/Download/download (5).jpeg` | top banner logo → `drawable-nodpi/ikoko_logo.jpg` |
+
+Generate them with: `bash scripts/setup_images.sh`
+(custom paths: `bash scripts/setup_images.sh <icon> <logo>`)
+
 ## Build
+
+### On a PC
 
 1. Clone: `git clone https://github.com/gikoko611/IKOKO-Manager.git`
 2. Open in Android Studio (or run `gradle wrapper --gradle-version 8.9` once
    to generate the wrapper).
 3. Build: `./gradlew assembleDebug`
+
+### In Termux (on-device, no PC needed)
+
+```bash
+git clone https://github.com/gikoko611/IKOKO-Manager.git
+cd IKOKO-Manager
+bash scripts/termux_setup.sh   # one time: JDK 17, SDK 35, aapt2, ImageMagick
+bash scripts/termux_build.sh   # branding + build + copy APK to Download
+```
+
+The APK lands in `/storage/emulated/0/Download/I-KO-KO-Manager-debug.apk`.
+
+Termux specifics handled by the scripts: the system `aapt2` via
+`android.aapt2FromMavenOverride`, `openjdk-17` as the Gradle JVM, and a
+device-friendly 1.5 GB Gradle heap.
 
 Toolchain: Kotlin 2.1, Jetpack Compose (Material 3), AGP 8.7.3, Gradle 8.9,
 JDK 17, minSdk 24, targetSdk 35.
@@ -59,12 +92,17 @@ app/src/main/java/com/gikoko/ikokomanager/
 │   ├── FileRepository.kt     SAF listing helpers
 │   └── Utils.kt              size formatting, hashes
 └── ui/                       (Compose screens)
-    ├── MainScreen.kt         tabs: Files / Apps / Dex / Tools
+    ├── MainScreen.kt         top banner logo + tabs: Files / Apps / Dex / Tools
     ├── FileBrowserScreen.kt  SAF browser + APK actions
     ├── AppListScreen.kt      installed apps + extract
     ├── DexEditorScreen.kt    dex list, smali browser, text editor, build & sign
     ├── ToolsScreen.kt        sign tool, hash tool
     └── Components.kt         shared small composables
+
+scripts/
+├── setup_images.sh           generate icon + logo resources from your images
+├── termux_setup.sh           one-time on-device build environment
+└── termux_build.sh           on-device build + APK output to Download
 ```
 
 ## Libraries (all legally clean open source)

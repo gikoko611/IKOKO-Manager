@@ -1,21 +1,23 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# I KO KO Manager - app icon + in-app logo setup (Termux)
+# I KO KO Manager - generate branding resources from your own images (Termux).
 #
-# Uses:
-#   /storage/emulated/0/Download/download (6).jpeg  -> launcher icon
-#   /storage/emulated/0/Download/download (5).jpeg  -> logo shown on the main screen
+#   icon  /storage/emulated/0/Download/download (6).jpeg  -> launcher icons
+#          (legacy square + round + adaptive-icon foreground, all densities)
+#   logo  /storage/emulated/0/Download/download (5).jpeg  -> top banner logo
 #
-# Run:  bash scripts/setup_images.sh
+# Run from anywhere:   bash scripts/setup_images.sh
+#   or custom paths:   bash scripts/setup_images.sh <icon> <logo>
+#
+# scripts/termux_build.sh runs this automatically before every build.
 #
 set -e
 
-SRC_ICON="/storage/emulated/0/Download/download (6).jpeg"
-SRC_LOGO="/storage/emulated/0/Download/download (5).jpeg"
+SRC_ICON="${1:-/storage/emulated/0/Download/download (6).jpeg}"
+SRC_LOGO="${2:-/storage/emulated/0/Download/download (5).jpeg}"
 
-REPO="$HOME/IKOKO-Manager"
-[ -d "$REPO" ] || git clone https://github.com/gikoko611/IKOKO-Manager.git "$REPO"
-RES="$REPO/app/src/main/res"
+# repo root = parent directory of this script
+RES="$(cd "$(dirname "$0")/.." && pwd)/app/src/main/res"
 
 command -v magick >/dev/null 2>&1 || pkg install -y imagemagick
 
@@ -23,20 +25,49 @@ for f in "$SRC_ICON" "$SRC_LOGO"; do
   [ -f "$f" ] || { echo "Missing image: $f"; exit 1; }
 done
 
-# 1) Launcher icon -> every density bucket.
-#    Density PNGs take precedence over the mipmap-anydpi vector fallback,
-#    so the real icon shows on all devices.
-for pair in "mdpi 48" "hdpi 72" "xhdpi 96" "xxhdpi 144" "xxxhdpi 192"; do
-  set -- $pair
-  mkdir -p "$RES/mipmap-$1"
-  magick "$SRC_ICON" -resize "${2}x${2}^" -gravity center -extent "${2}x${2}" \
-    "$RES/mipmap-$1/ic_launcher.png"
+echo "Icon : $SRC_ICON"
+echo "Logo : $SRC_LOGO"
+echo "Out  : $RES"
+echo ""
+
+# 1) Launcher icons.  density:legacy_px:adaptive_foreground_px
+DENSITIES="mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432"
+
+for d in $DENSITIES; do
+  density="${d%%:*}"
+  rest="${d#*:}"
+  s="${rest%%:*}"
+  f="${rest##*:}"
+  out="$RES/mipmap-$density"
+  mkdir -p "$out"
+
+  # square legacy icon (center-crop)
+  magick "$SRC_ICON" -resize "${s}x${s}^" -gravity center -extent "${s}x${s}" \
+    "$out/ic_launcher.png"
+
+  # round icon (circle-cropped copy)
+  mask="$(mktemp "${TMPDIR:-/tmp}/ikoko_mask_XXXXXX.png")"
+  magick -size "${s}x${s}" xc:black -fill white \
+    -draw "circle $((s/2-1)),$((s/2-1)) $((s/2-1)),0" "$mask"
+  magick "$out/ic_launcher.png" "$mask" -alpha off -compose CopyOpacity -composite \
+    "$out/ic_launcher_round.png"
+  rm -f "$mask"
+
+  # adaptive icon foreground: artwork at ~62% centered on a transparent canvas
+  a=$((f * 62 / 100))
+  magick -size "${f}x${f}" xc:none \
+    \( "$SRC_ICON" -resize "${a}x${a}^" -gravity center -extent "${a}x${a}" \) \
+    -gravity center -composite "$out/ic_launcher_foreground.png"
+
+  echo "  mipmap-$density/  ic_launcher + round + foreground (${s}px)"
 done
 
-# 2) In-app logo -> replaces the placeholder vector.
-magick "$SRC_LOGO" -resize 1024x1024\> "$RES/drawable/ikoko_logo.png"
+# 2) Top banner logo - same resource name as the placeholder vector, so the
+#    app code never changes. drawable-nodpi = Android must never rescale it.
+mkdir -p "$RES/drawable-nodpi"
+magick "$SRC_LOGO" -resize "1280x1280>" "$RES/drawable-nodpi/ikoko_logo.jpg"
 rm -f "$RES/drawable/ikoko_logo.xml"
+echo "  drawable-nodpi/ikoko_logo.jpg"
 
 echo ""
-echo "Done - icon + logo installed."
-echo "Commit:  cd $REPO && git add -A && git commit -m 'app icon + logo' && git push"
+echo "Branding resources ready."
