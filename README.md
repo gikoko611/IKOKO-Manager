@@ -42,18 +42,25 @@ The launcher icon and the top banner logo are **generated from your own images**
 `scripts/setup_images.sh` produces every icon size, so you never resize anything
 by hand. Until then, a placeholder vector logo keeps the project buildable.
 
-**Recommended:** commit your two originals into the repo once
-(GitHub web → *Add file → Upload files*, drag the images, name them exactly):
+**Recommended:** commit your two originals into the repo once, as:
 
 | Repo file | Used as |
 |---|---|
 | `branding/icon.jpeg` | launcher icon → `mipmap-*/ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png` (adaptive icon, all densities) |
 | `branding/logo.jpeg` | top banner logo → `drawable-nodpi/ikoko_logo.jpg` |
 
+Ways to get the images into the repo:
+
+- **From Termux:** `bash scripts/upload_branding.sh` — copies them from
+  `/storage/emulated/0/Download/download (6).jpeg` / `(5).jpeg` and pushes.
+  Needs a one-time GitHub login (`gh auth login`, short code + browser).
+- **From the GitHub web UI:** *Add file → Upload files*, drag the images,
+  name them `branding/icon.jpeg` and `branding/logo.jpeg`.
+
 `.jpg` / `.png` extensions work too — upload the originals as-is, no resizing.
-Alternatively keep the images only on the Termux device at
-`/storage/emulated/0/Download/download (6).jpeg` / `(5).jpeg`, or pass explicit
-paths: `bash scripts/setup_images.sh <icon> <logo>`.
+Alternatively keep the images only on the device (the build finds them in the
+Download folder automatically), or pass explicit paths:
+`bash scripts/setup_images.sh <icon> <logo>`.
 
 You can also commit ready-made icon resources directly into the
 `mipmap-*/` + `drawable-nodpi/` folders (same file names); the build then skips
@@ -73,8 +80,9 @@ image generation automatically.
 ```bash
 git clone https://github.com/gikoko611/IKOKO-Manager.git
 cd IKOKO-Manager
-bash scripts/termux_setup.sh   # one time: JDK 17, SDK 35, aapt2, ImageMagick
-bash scripts/termux_build.sh   # branding + build + copy APK to Download
+bash scripts/termux_setup.sh        # one time: JDK 17, SDK 35, aapt2, ImageMagick, gh
+bash scripts/upload_branding.sh     # one time: push your icon + logo into branding/
+bash scripts/termux_build.sh        # branding + build + copy APK to Download
 ```
 
 The APK lands in `/storage/emulated/0/Download/I-KO-KO-Manager-debug.apk`.
@@ -108,6 +116,7 @@ app/src/main/java/com/gikoko/ikokomanager/
     └── Components.kt         shared small composables
 
 scripts/
+├── upload_branding.sh        push your icon + logo images into branding/
 ├── setup_images.sh           generate icon + logo resources from your images
 ├── termux_setup.sh           one-time on-device build environment
 └── termux_build.sh           on-device build + APK output to Download

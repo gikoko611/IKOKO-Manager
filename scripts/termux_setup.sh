@@ -1,8 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
 # I KO KO Manager - one-time build environment setup for Termux.
-# Installs JDK 17, aapt2, ImageMagick, git, gradle and the Android SDK
-# command-line tools, then writes the Termux-specific Gradle settings.
+# Installs JDK 17, aapt2, ImageMagick, git, gradle, gh (GitHub CLI) and the
+# Android SDK command-line tools, then writes the Termux-specific Gradle
+# settings.
 #
 # Run once:  bash scripts/termux_setup.sh
 #
@@ -10,7 +11,7 @@ set -e
 
 echo "== 1/5 Termux packages =="
 pkg update -y
-pkg install -y openjdk-17 aapt2 git gradle imagemagick unzip curl
+pkg install -y openjdk-17 aapt2 git gh gradle imagemagick unzip curl
 
 echo "== 2/5 Shared storage access =="
 termux-setup-storage
@@ -39,4 +40,5 @@ android.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2
 EOF
 
 echo ""
-echo "Setup done. Build anytime with:  bash scripts/termux_build.sh"
+echo "Setup done. Upload your images with:  bash scripts/upload_branding.sh"
+echo "Then build with:                      bash scripts/termux_build.sh"
