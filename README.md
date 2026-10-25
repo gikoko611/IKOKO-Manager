@@ -38,19 +38,26 @@ must be uninstalled first — that is normal Android behavior, not a bug.
 
 ## Branding (icon + logo)
 
-The launcher icon and the top banner logo are **generated on your device** from
-your own images — no binary files are stored in this repo. Until you generate
-them, a placeholder vector logo keeps the project buildable.
+The launcher icon and the top banner logo are **generated from your own images** —
+`scripts/setup_images.sh` produces every icon size, so you never resize anything
+by hand. Until then, a placeholder vector logo keeps the project buildable.
 
-Source images (on the Termux device):
+**Recommended:** commit your two originals into the repo once
+(GitHub web → *Add file → Upload files*, drag the images, name them exactly):
 
-| File | Used as |
+| Repo file | Used as |
 |---|---|
-| `/storage/emulated/0/Download/download (6).jpeg` | launcher icon → `mipmap-*/ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png` (adaptive icon, all densities) |
-| `/storage/emulated/0/Download/download (5).jpeg` | top banner logo → `drawable-nodpi/ikoko_logo.jpg` |
+| `branding/icon.jpeg` | launcher icon → `mipmap-*/ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png` (adaptive icon, all densities) |
+| `branding/logo.jpeg` | top banner logo → `drawable-nodpi/ikoko_logo.jpg` |
 
-Generate them with: `bash scripts/setup_images.sh`
-(custom paths: `bash scripts/setup_images.sh <icon> <logo>`)
+`.jpg` / `.png` extensions work too — upload the originals as-is, no resizing.
+Alternatively keep the images only on the Termux device at
+`/storage/emulated/0/Download/download (6).jpeg` / `(5).jpeg`, or pass explicit
+paths: `bash scripts/setup_images.sh <icon> <logo>`.
+
+You can also commit ready-made icon resources directly into the
+`mipmap-*/` + `drawable-nodpi/` folders (same file names); the build then skips
+image generation automatically.
 
 ## Build
 
@@ -82,6 +89,7 @@ JDK 17, minSdk 24, targetSdk 35.
 ## Architecture
 
 ```
+branding/                    your icon + logo source images (committed)
 app/src/main/java/com/gikoko/ikokomanager/
 ├── MainActivity.kt
 ├── core/                     (all engine code, plain Kotlin)

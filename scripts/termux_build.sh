@@ -15,8 +15,12 @@ OUT="/storage/emulated/0/Download/I-KO-KO-Manager-debug.apk"
 cd "$DIR"
 git pull --rebase
 
-# 1) Branding: launcher icons + logo generated from your own images.
-bash scripts/setup_images.sh
+# 1) Branding: launcher icons + logo generated from your images
+#    (branding/icon + branding/logo in the repo, or the Download folder).
+#    Skipped automatically if no source image exists anywhere - e.g. when
+#    ready-made icon resources were committed directly.
+bash scripts/setup_images.sh \
+  || echo "Branding: no source images found - keeping existing resources."
 
 # 2) Point Gradle at the Termux Android SDK.
 echo "sdk.dir=$HOME/android-sdk" > local.properties

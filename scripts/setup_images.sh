@@ -1,29 +1,52 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# I KO KO Manager - generate branding resources from your own images (Termux).
+# I KO KO Manager - generate branding resources from your images (Termux).
 #
-#   icon  /storage/emulated/0/Download/download (6).jpeg  -> launcher icons
-#          (legacy square + round + adaptive-icon foreground, all densities)
-#   logo  /storage/emulated/0/Download/download (5).jpeg  -> top banner logo
+# Source images are found in this order:
+#   1. arguments:      bash scripts/setup_images.sh <icon> <logo>
+#   2. committed:      branding/icon.jpeg + branding/logo.jpeg in the repo
+#                      (any of .jpeg/.jpg/.png, no resizing needed - upload as-is)
+#   3. device storage: /storage/emulated/0/Download/download (6).jpeg / (5).jpeg
 #
-# Run from anywhere:   bash scripts/setup_images.sh
-#   or custom paths:   bash scripts/setup_images.sh <icon> <logo>
+# Output:
+#   mipmap-*/ic_launcher.png + ic_launcher_round.png + ic_launcher_foreground.png
+#   drawable-nodpi/ikoko_logo.jpg
 #
 # scripts/termux_build.sh runs this automatically before every build.
 #
 set -e
 
-SRC_ICON="${1:-/storage/emulated/0/Download/download (6).jpeg}"
-SRC_LOGO="${2:-/storage/emulated/0/Download/download (5).jpeg}"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+RES="$REPO/app/src/main/res"
 
-# repo root = parent directory of this script
-RES="$(cd "$(dirname "$0")/.." && pwd)/app/src/main/res"
+# print the first existing file among the arguments
+find_first() {
+  for f in "$@"; do
+    [ -f "$f" ] && { echo "$f"; return 0; }
+  done
+  return 1
+}
+
+if [ -n "$1" ]; then
+  SRC_ICON="$1"
+else
+  SRC_ICON="$(find_first \
+    "$REPO/branding/icon.jpeg" "$REPO/branding/icon.jpg" "$REPO/branding/icon.png" \
+    "/storage/emulated/0/Download/download (6).jpeg" || true)"
+fi
+
+if [ -n "$2" ]; then
+  SRC_LOGO="$2"
+else
+  SRC_LOGO="$(find_first \
+    "$REPO/branding/logo.jpeg" "$REPO/branding/logo.jpg" "$REPO/branding/logo.png" \
+    "/storage/emulated/0/Download/download (5).jpeg" || true)"
+fi
+
+[ -n "$SRC_ICON" ] || { echo "Icon image not found."; echo "Commit it as branding/icon.jpeg (or pass it as the 1st argument)."; exit 1; }
+[ -n "$SRC_LOGO" ] || { echo "Logo image not found."; echo "Commit it as branding/logo.jpeg (or pass it as the 2nd argument)."; exit 1; }
 
 command -v magick >/dev/null 2>&1 || pkg install -y imagemagick
-
-for f in "$SRC_ICON" "$SRC_LOGO"; do
-  [ -f "$f" ] || { echo "Missing image: $f"; exit 1; }
-done
 
 echo "Icon : $SRC_ICON"
 echo "Logo : $SRC_LOGO"
